@@ -1,47 +1,43 @@
+"use client";
+
 import {
   SelectProps as HeroUISelectProps,
   Select as HeroUISelect,
   SelectItem as HeroUISelectItem,
   cn,
 } from "@heroui/react";
-
-import { useField } from "@/hooks/use-field";
 import { Options } from "@/types/options";
+import { useApp } from "@/contexts/app-context";
+import { useForm } from "../form/form";
+import { useCallback } from "react";
 
 export type SelectProps = {
-  queryCollectable?: boolean;
   children?: HeroUISelectProps["children"];
   options?: Options;
 } & Omit<HeroUISelectProps, "children">;
 
 export const Select: React.FC<SelectProps> = ({
-  name: inputName,
-  value,
+  name,
   className,
-  queryCollectable = false,
   options,
   disabled,
   children,
-  required,
-  isRequired,
   multiple,
   ...props
 }) => {
-  const isFieldRequired = required ?? isRequired ?? false;
+  const { query } = useApp();
+  const form = useForm();
 
-  const {
-    name,
-    value: fieldValue,
-    onChange,
-  } = useField<HeroUISelectProps["value"]>(inputName, {
-    initialValue: value,
-    required: isFieldRequired,
-    queryCollectable,
-    queryCollectFunction({ name, router }) {
-      return String(router.query[name]).split(",");
-    },
-    type: multiple ? "select-multiple" : "select",
-  });
+  const getFieldValue = useCallback((): Set<string> => {
+    if (!name) return new Set();
+    let valueStr = undefined;
+    if (form && form.values[name] != null) {
+      valueStr = String(form.values[name]);
+    } else {
+      valueStr = String(query[name] ?? "");
+    }
+    return new Set<string>(valueStr.split(","));
+  }, [name, query, form]);
 
   return (
     <HeroUISelect
@@ -54,36 +50,19 @@ export const Select: React.FC<SelectProps> = ({
         listbox: "!transition-colors !duration-100 ",
         listboxWrapper: "!transition-colors !duration-100",
       }}
+      defaultSelectedKeys={getFieldValue()}
       labelPlacement="outside"
       variant="bordered"
       selectionMode={multiple ? "multiple" : "single"}
+      onSelectionChange={(keys) => {
+        if (!name) return;
+        form?.setValue(name, Array.from(keys).join(","));
+      }}
       className={cn(
         "text-gray-700 dark:text-gray-200 transition-colors duration-100 select",
         className,
         disabled && "opacity-50 pointer-events-none"
       )}
-      selectedKeys={
-        Array.isArray(fieldValue)
-          ? fieldValue
-              .filter((v) => v !== undefined && v !== null)
-              .map(String)
-              .filter((key) => key !== "undefined")
-          : fieldValue !== undefined &&
-            fieldValue !== null &&
-            String(fieldValue) !== "undefined"
-          ? [String(fieldValue)]
-          : []
-      }
-      onSelectionChange={(keys) => {
-        const selectedKeys = Array.from(keys as Set<string>);
-        if (multiple) {
-          onChange(selectedKeys);
-        } else {
-          onChange(selectedKeys[0]);
-        }
-      }}
-      required={isFieldRequired}
-      isRequired={isFieldRequired}
       {...props}
     >
       {options

@@ -1,7 +1,14 @@
 "use client";
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
 
 interface AppContextProps {
+  query: Record<string, string | number>;
   headerVisible: boolean;
   setHeaderVisible: (visible: boolean) => void;
 }
@@ -13,10 +20,30 @@ interface AppProviderProps {
 }
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
+  const [query, setQuery] = useState<Record<string, string | number>>({});
   const [headerVisible, setHeaderVisible] = useState<boolean>(true);
 
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const queryData = new URLSearchParams(window.location.search);
+    queryData.forEach((value, key) => {
+      const field = document.querySelector(
+        `[name="${key}"][data-query-collectable="true"]`
+      );
+      if (field) {
+        setQuery((prev) => ({
+          ...prev,
+          [key]: value,
+        }));
+      }
+    });
+  }, []);
+
   return (
-    <AppContext.Provider value={{ headerVisible, setHeaderVisible }}>
+    <AppContext.Provider value={{ query, headerVisible, setHeaderVisible }}>
       {children}
     </AppContext.Provider>
   );

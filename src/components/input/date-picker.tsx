@@ -1,10 +1,10 @@
+"use client";
+import React from "react";
 import {
+  cn,
   DatePicker as HeroUIDatePicker,
   DatePickerProps as HeroUIDatePickerProps,
 } from "@heroui/react";
-import { useField } from "@/hooks/use-field";
-import { parseToCalendarDate } from "@/lib/date";
-import { parseDate } from "@internationalized/date";
 
 export type DatePickerValue = HeroUIDatePickerProps["value"];
 
@@ -15,44 +15,13 @@ export interface DatePickerProps extends HeroUIDatePickerProps {
 }
 
 export const DatePicker: React.FC<DatePickerProps> = ({
-  name: inputName,
-  queryCollectable,
-  onChange: propOnChange,
-  value: initialFieldValue,
-  required,
-  isRequired,
+  className,
+  queryCollectable = false,
   ...props
 }) => {
-  const isFieldRequired = required ?? isRequired ?? false;
-
-  const { name, value, onChange } = useField<DatePickerValue>(inputName, {
-    initialValue:
-      typeof initialFieldValue === "string"
-        ? parseToCalendarDate(initialFieldValue)
-        : initialFieldValue,
-    onChange: (value) => {
-      propOnChange?.(value ?? null);
-    },
-    queryCollectable: queryCollectable ?? false,
-    queryCollectFunction: ({ name, router }) => {
-      if (name) {
-        const queryValue: string | undefined = Array.isArray(router.query[name])
-          ? router.query[name][0]
-          : router.query[name];
-        if (queryValue) {
-          return parseDate(queryValue);
-        }
-      }
-    },
-    required: isFieldRequired,
-    type: "date",
-  });
-
   return (
     <HeroUIDatePicker
-      name={name}
-      value={typeof value === "string" ? undefined : value}
-      onChange={onChange}
+      className={cn("w-full max-h-10", className)}
       classNames={{
         base: "relative gap-1 !pb-0",
         label: "top-6 !translate-y-[0.30em] w-max pr-2",
@@ -63,8 +32,8 @@ export const DatePicker: React.FC<DatePickerProps> = ({
       }}
       labelPlacement="outside"
       variant="bordered"
-      isRequired={isFieldRequired}
       {...props}
+      data-query-collectable={queryCollectable ? "true" : "false"}
     />
   );
 };

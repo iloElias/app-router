@@ -45,6 +45,7 @@ const Icon: React.FC<ComponentsProps> = ({
         width: props.size,
         height: props.size,
       }}
+      suppressHydrationWarning
     >
       {React.isValidElement(FirstChild) &&
         React.cloneElement(FirstChild as React.ReactElement<IconProps>, {

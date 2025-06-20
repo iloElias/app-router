@@ -23,7 +23,10 @@ const FooterItem: React.FC<FooterItemProps> = ({
   children,
   disabled,
 }) => {
-  const isActive = href ? window.location.pathname === href : false;
+  const isActive =
+    href && typeof window !== "undefined"
+      ? window.location.pathname === href
+      : false;
 
   return (
     <Button

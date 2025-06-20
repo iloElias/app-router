@@ -1,62 +1,61 @@
+"use client";
+import { useApp } from "@/contexts/app-context";
 import {
   cn,
-  NumberInputProps as HeroUIINumberInputProps,
+  NumberInputProps as HeroUINumberInputProps,
   NumberInput as HeroUINumberInput,
 } from "@heroui/react";
-import { useTranslations } from "next-intl";
-import { useField } from "@/hooks/use-field";
+import { useCallback, useEffect, useState } from "react";
+import { useForm } from "../form/form";
 
-export interface NumberInputProps extends HeroUIINumberInputProps {
-  queryCollectable?: boolean;
+export interface NumberInputProps extends HeroUINumberInputProps {
+  className?: string;
 }
 
 export const NumberInput: React.FC<NumberInputProps> = ({
-  name: inputName,
-  value,
+  name,
   className,
   disabled,
-  onChange,
-  required,
-  isRequired,
-  queryCollectable,
+  onValueChange,
   ...props
 }) => {
-  const t = useTranslations();
-  const isFieldRequired = required ?? isRequired ?? false;
+  const { query } = useApp();
+  const form = useForm();
 
-  const field = useField<number | string>(inputName, {
-    initialValue: value,
-    required: isFieldRequired,
-    type: props.type ?? "text",
-    validate: (val) => {
-      if (isFieldRequired && !val) {
-        return t("UI.messages.fill_this_field");
-      }
-      if (props.validate) {
-        const result = props.validate(Number(val));
-        if (result === true || result === undefined) {
-          return null;
-        }
-        if (Array.isArray(result)) {
-          return result.join(", ");
-        }
-        return result;
-      }
-      return null;
-    },
-    queryCollectable,
-  });
+  const [inputValue, setInputValue] = useState<number>();
+
+  const getFieldValue = useCallback(() => {
+    if (!name) return undefined;
+    if (form && form.values[name]) {
+      return Number(form.values[name]);
+    }
+    const value = query[name];
+    return Number(value ?? undefined);
+  }, [name, query, form]);
+
+  useEffect(() => {
+    setInputValue(getFieldValue());
+  }, [getFieldValue]);
 
   return (
     <HeroUINumberInput
-      name={field.name}
       classNames={{
         base: "!relative",
         label: "!top-6 !-translate-y-[3.25em] start-0",
         helperWrapper: "!absolute !-bottom-[24px] !-left-0.5 max-w-full",
         errorMessage: "!truncate",
         input: "!transition-colors !duration-100",
-        inputWrapper: "!transition-colors !duration-100",
+        inputWrapper: "!transition-colors !duration-100 shadow-xs",
+      }}
+      value={inputValue}
+      onValueChange={(value) => {
+        setInputValue(value);
+        if (onValueChange) {
+          onValueChange(value);
+        }
+        if (name && form) {
+          form.setValue(name, value);
+        }
       }}
       labelPlacement="outside"
       variant="bordered"
@@ -65,16 +64,6 @@ export const NumberInput: React.FC<NumberInputProps> = ({
         className,
         disabled && "opacity-50 pointer-events-none"
       )}
-      value={Number(field.value)}
-      errorMessage={field.error}
-      onValueChange={(v) => {
-        field.onChange(v);
-        onChange?.({
-          target: { value: v },
-        } as unknown as React.ChangeEvent<HTMLInputElement>);
-      }}
-      required={isFieldRequired}
-      isRequired={isFieldRequired}
       {...props}
       disabled={disabled}
     />

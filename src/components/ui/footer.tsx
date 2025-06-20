@@ -1,10 +1,6 @@
 "use client";
 import React from "react";
-import {
-  domAnimation,
-  LazyMotion,
-  motion,
-} from "framer-motion";
+import { domAnimation, LazyMotion, motion } from "framer-motion";
 import { useApp } from "@/contexts/app-context";
 import { cn } from "@heroui/react";
 
@@ -51,7 +47,7 @@ export const Footer: React.FC<FooterProps> = ({
         )}
         {...props}
       >
-        <footer className="z-40 relative flex flex-row flex-nowrap justify-between items-center gap-4 px-6 w-full max-w-[1024px] h-[var(--navbar-height)]">
+        <footer className="z-40 relative flex flex-row flex-nowrap justify-between items-center gap-4 px-10 w-full max-w-[1024px] h-[var(--navbar-height)]">
           {children}
         </footer>
       </motion.nav>

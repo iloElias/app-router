@@ -2,12 +2,7 @@ import { FormErrors, FormValues } from "@/types/form";
 import { Form } from "./form";
 import { useCallback, useEffect, useState } from "react";
 import api from "@/service/api";
-import { useTranslations } from "next-intl";
-import { useToast } from "@/service/toast";
-
 import { cn, Spinner } from "@heroui/react";
-import { NotFound } from "../error/not-found";
-import { useRouter } from "next/router";
 
 export interface CrudFormProps {
   id?: string;
@@ -26,7 +21,7 @@ export const CrudForm: React.FC<CrudFormProps> = ({
   id,
   uuid,
   update,
-  listUrl,
+  // listUrl,
   getUrl: GetUrl,
   postUrl,
   putUrl: PutUrl,
@@ -34,10 +29,6 @@ export const CrudForm: React.FC<CrudFormProps> = ({
   children,
   className,
 }) => {
-  const t = useTranslations();
-  const toast = useToast();
-  const router = useRouter();
-
   const [notFound, setNotFound] = useState<boolean>(false);
   const [dataFetched, setDataFetched] = useState<boolean>(false);
   const [formLoading, setFormLoading] = useState<boolean>(false);
@@ -76,32 +67,29 @@ export const CrudForm: React.FC<CrudFormProps> = ({
       const url = update ? putUrl() : postUrl;
       makeRequest(url ?? "", data)
         .then(() => {
-          if (update) {
-            toast.success({
-              description: t("Messages.success.updated_successfully"),
-            });
-          } else {
-            toast.success({
-              description: t("Messages.success.created_successfully"),
-            });
-          }
-          if (listUrl) {
-            router.push(listUrl);
-          } else {
-            router.push("/");
-          }
+          // if (update) {
+          //   toast.success({
+          //     description: t("Messages.success.updated_successfully"),
+          //   });
+          // } else {
+          //   toast.success({
+          //     description: t("Messages.success.created_successfully"),
+          //   });
+          // }
+          // if (listUrl) {
+          //   router.push(listUrl);
+          // } else {
+          //   router.push("/");
+          // }
         })
         .catch(({ response: { data: errors } }) => {
           setFormErrors(errors.errors);
-          toast.error({
-            description: t("Messages.errors.default"),
-          });
         })
         .finally(() => {
           setFormLoading(false);
         });
     },
-    [update, listUrl, postUrl, t, toast, router, makeRequest, putUrl]
+    [update, postUrl, makeRequest, putUrl]
   );
 
   useEffect(() => {
@@ -116,19 +104,16 @@ export const CrudForm: React.FC<CrudFormProps> = ({
           })
           .catch(() => {
             setNotFound(true);
-            toast.error({
-              description: t("Messages.errors.default"),
-            });
           })
           .finally(() => {
             setDataFetched(true);
           });
       }
     }
-  }, [update, t, toast, dataFetched, getUrl, setFetchedData]);
+  }, [update, dataFetched, getUrl, setFetchedData]);
 
   if (notFound) {
-    return <NotFound />;
+    return <></>;
   }
 
   return (

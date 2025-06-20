@@ -1,5 +1,5 @@
+"use client";
 import { parseNested, toNested } from "@/lib/nested";
-import { useToast } from "@/service/toast";
 import type { FormErrors, FormValue, FormValues } from "@/types/form";
 import {
   FormProps as HeroUIFormProps,
@@ -11,6 +11,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useId,
   useState,
 } from "react";
 
@@ -28,6 +29,7 @@ export interface FormProps extends HeroUIFormProps {
 export interface FormProviderProps {
   formId: string;
   values?: FormValues;
+  setValue: (address: string, value: FormValue | FormValue[]) => void;
   errors: FormErrors;
   setError: (address: string, error: ValidationError) => void;
 }
@@ -42,15 +44,17 @@ export const Form: React.FC<FormProps> = ({
   validationErrors,
   ...props
 }) => {
-  const toast = useToast();
+  const reactId = useId();
+
   const [formId, setFormId] = useState("");
+
   useEffect(() => {
     if (id) {
       setFormId(id);
       return;
     }
-    setFormId(`form-${Math.random().toString(36).substring(2, 9)}`);
-  }, [id]);
+    setFormId(`form-${reactId}`);
+  }, [id, reactId]);
 
   const [values, setValues] = useState<FormValues>(
     parseNested(initialData ?? {})
@@ -58,13 +62,20 @@ export const Form: React.FC<FormProps> = ({
 
   const [errors, setErrors] = useState<FormErrors>(validationErrors ?? {});
 
-  const notifyError = useCallback(() => {
-    if (Object.keys(errors).length > 0) {
-      toast.error({
-        description: "Please fix the errors in the form.",
+  const setValue = useCallback(
+    (address: string, value: FormValue | FormValue[]) => {
+      setValues((prevValues: FormValues) => {
+        const newValues = { ...prevValues };
+        if (Array.isArray(value)) {
+          newValues[address] = value;
+        } else {
+          newValues[address] = value;
+        }
+        return newValues;
       });
-    }
-  }, [errors, toast]);
+    },
+    [setValues]
+  );
 
   const setError = useCallback((address: string, error?: ValidationError) => {
     setErrors((prevErrors: FormErrors) => {
@@ -80,17 +91,14 @@ export const Form: React.FC<FormProps> = ({
 
   const onSubmitHandle = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const hasErrors = Object.keys(errors).length > 0;
-    if (!hasErrors) {
-      const formData = Object.fromEntries(new FormData(event.currentTarget));
-      const nestedData = {
-        ...toNested({ ...formData, ...values }),
-      };
 
-      onSubmit?.(nestedData);
-      return;
-    }
-    notifyError();
+    const formData = Object.fromEntries(new FormData(event.currentTarget));
+    const nestedData = {
+      ...toNested({ ...formData, ...values }),
+    };
+
+    onSubmit?.(nestedData);
+    return;
   };
 
   useEffect(() => {
@@ -110,16 +118,14 @@ export const Form: React.FC<FormProps> = ({
       <FormProvider.Provider
         value={{
           formId,
-          errors,
           values,
+          setValue,
+          errors,
           setError,
         }}
       >
         <HeroUIForm
           onSubmit={onSubmitHandle}
-          onInvalid={() => {
-            notifyError();
-          }}
           validationErrors={errors}
           {...props}
           id={formId}
