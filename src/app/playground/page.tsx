@@ -15,6 +15,8 @@ import { Main } from "@/components/main";
 import { Section } from "@/components/section";
 import { SubmitFormButton } from "@/components/ux/submit-form-button";
 import { useRouter } from "@/hooks/use-router";
+import { ValidationError } from "next/dist/compiled/amphtml-validator";
+import { useState } from "react";
 
 const options = [
   { value: "option1", label: "Opção 1", description: "Descrição da Opção 1" },
@@ -23,7 +25,8 @@ const options = [
 ];
 
 export default function Playground() {
-  const router = useRouter();
+  const router = useRouter();  
+  const [errors, setErrors] = useState<ValidationError>();
 
   return (
     <>
@@ -32,10 +35,21 @@ export default function Playground() {
           <Form
             className="w-full"
             initialData={router.query}
+            validationErrors={errors}
             onSubmit={(data) => {
               router.push({
                 pathname: "/playground",
                 query: data,
+              });
+              setErrors({
+                text: "Este é um erro de exemplo",
+                number: "Este é um erro de exemplo",
+                decimal: "Este é um erro de exemplo",
+                select: "Este é um erro de exemplo",
+                select_multiple: "Este é um erro de exemplo",
+                autocomplete: "Este é um erro de exemplo",
+                date: "Este é um erro de exemplo",
+                textarea: "Este é um erro de exemplo",
               });
             }}
           >

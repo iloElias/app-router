@@ -5,18 +5,17 @@ import {
   DatePicker as HeroUIDatePicker,
   DatePickerProps as HeroUIDatePickerProps,
 } from "@heroui/react";
-
 export type DatePickerValue = HeroUIDatePickerProps["value"];
 
 export interface DatePickerProps extends HeroUIDatePickerProps {
-  required?: boolean;
   label?: string;
-  queryCollectable?: boolean;
 }
 
 export const DatePicker: React.FC<DatePickerProps> = ({
+  // value,
+  // errorMessage: error,
+  // onChange,
   className,
-  queryCollectable = false,
   ...props
 }) => {
   return (
@@ -33,7 +32,6 @@ export const DatePicker: React.FC<DatePickerProps> = ({
       labelPlacement="outside"
       variant="bordered"
       {...props}
-      data-query-collectable={queryCollectable ? "true" : "false"}
     />
   );
 };

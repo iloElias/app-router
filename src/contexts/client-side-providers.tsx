@@ -12,7 +12,7 @@ export const ClientSideProviders: React.FC<ClientSideProvidersProps> = ({
 }) => {
   return (
     <>
-      <HeroUIProvider>
+      <HeroUIProvider locale="pt-BR">
         <NextThemesProvider>
           <AppProvider>{children}</AppProvider>
         </NextThemesProvider>

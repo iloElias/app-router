@@ -7,9 +7,7 @@ import {
   cn,
 } from "@heroui/react";
 import { Options } from "@/types/options";
-import { useApp } from "@/contexts/app-context";
-import { useForm } from "../form/form";
-import { useCallback } from "react";
+import { useField } from "@/hooks/use-field";
 
 export type SelectProps = {
   children?: HeroUISelectProps["children"];
@@ -23,25 +21,22 @@ export const Select: React.FC<SelectProps> = ({
   disabled,
   children,
   multiple,
+  onSelectionChange,
   ...props
 }) => {
-  const { query } = useApp();
-  const form = useForm();
-
-  const getFieldValue = useCallback((): Set<string> => {
-    if (!name) return new Set();
-    let valueStr = undefined;
-    if (form && form.values[name] != null) {
-      valueStr = String(form.values[name]);
-    } else {
-      valueStr = String(query[name] ?? "");
-    }
-    return new Set<string>(valueStr.split(","));
-  }, [name, query, form]);
+  const field = useField<SelectProps["selectedKeys"]>({
+    id: props.id,
+    name,
+    value: props.selectedKeys,
+    onChange: (value) => {
+      onSelectionChange?.(new Set(value));
+    },
+    ignoreForm: !name,
+    error: props.errorMessage,
+  });
 
   return (
     <HeroUISelect
-      name={name}
       classNames={{
         base: "relative max-h-10",
         label: "top-6 !-translate-y-[3.10em] text-foreground",
@@ -50,20 +45,21 @@ export const Select: React.FC<SelectProps> = ({
         listbox: "!transition-colors !duration-100 ",
         listboxWrapper: "!transition-colors !duration-100",
       }}
-      defaultSelectedKeys={getFieldValue()}
       labelPlacement="outside"
       variant="bordered"
       selectionMode={multiple ? "multiple" : "single"}
-      onSelectionChange={(keys) => {
-        if (!name) return;
-        form?.setValue(name, Array.from(keys).join(","));
-      }}
       className={cn(
         "text-gray-700 dark:text-gray-200 transition-colors duration-100 select",
         className,
         disabled && "opacity-50 pointer-events-none"
       )}
       {...props}
+      id={field.id}
+      name={field.name}
+      // selectedKeys={new Set(field.value)}
+      // onSelectionChange={field.onChange}
+      errorMessage={field.error}
+      // onBlur={field.onBlur}
     >
       {options
         ? options.map((option) => (

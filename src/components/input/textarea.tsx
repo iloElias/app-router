@@ -1,4 +1,5 @@
 "use client";
+import { useField } from "@/hooks/use-field";
 import {
   TextAreaProps as HeroUITextAreaProps,
   Textarea as HeroUITextarea,
@@ -14,6 +15,17 @@ export const Textarea: React.FC<TextAreaProps> = ({
   disabled,
   ...props
 }) => {
+  const field = useField<string>({
+    id: props.id,
+    name: props.name,
+    value: props.value,
+    onChange: (newValue) => {
+      props.onValueChange?.(newValue);
+    },
+    ignoreForm: !props.name,
+    error: props.errorMessage,
+  });
+
   return (
     <HeroUITextarea
       classNames={{
@@ -32,6 +44,12 @@ export const Textarea: React.FC<TextAreaProps> = ({
         disabled && "opacity-50 pointer-events-none"
       )}
       {...props}
+      id={field.id}
+      name={field.name}
+      value={field.value}
+      onValueChange={field.onChange}
+      onBlur={field.onBlur}
+      errorMessage={field.error}
       disabled={disabled}
     />
   );

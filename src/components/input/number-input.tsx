@@ -1,12 +1,10 @@
 "use client";
-import { useApp } from "@/contexts/app-context";
 import {
   cn,
   NumberInputProps as HeroUINumberInputProps,
   NumberInput as HeroUINumberInput,
 } from "@heroui/react";
-import { useCallback, useEffect, useState } from "react";
-import { useForm } from "../form/form";
+import { useField } from "@/hooks/use-field";
 
 export interface NumberInputProps extends HeroUINumberInputProps {
   className?: string;
@@ -19,23 +17,18 @@ export const NumberInput: React.FC<NumberInputProps> = ({
   onValueChange,
   ...props
 }) => {
-  const { query } = useApp();
-  const form = useForm();
-
-  const [inputValue, setInputValue] = useState<number>();
-
-  const getFieldValue = useCallback(() => {
-    if (!name) return undefined;
-    if (form && form.values[name]) {
-      return Number(form.values[name]);
-    }
-    const value = query[name];
-    return Number(value ?? undefined);
-  }, [name, query, form]);
-
-  useEffect(() => {
-    setInputValue(getFieldValue());
-  }, [getFieldValue]);
+  const field = useField<number>({
+    id: props.id,
+    name,
+    value: props.value,
+    onChange: (newValue) => {
+      if (onValueChange) {
+        onValueChange(newValue);
+      }
+    },
+    ignoreForm: !name,
+    error: props.errorMessage,
+  });
 
   return (
     <HeroUINumberInput
@@ -47,16 +40,6 @@ export const NumberInput: React.FC<NumberInputProps> = ({
         input: "!transition-colors !duration-100",
         inputWrapper: "!transition-colors !duration-100 shadow-xs",
       }}
-      value={inputValue}
-      onValueChange={(value) => {
-        setInputValue(value);
-        if (onValueChange) {
-          onValueChange(value);
-        }
-        if (name && form) {
-          form.setValue(name, value);
-        }
-      }}
       labelPlacement="outside"
       variant="bordered"
       className={cn(
@@ -65,6 +48,12 @@ export const NumberInput: React.FC<NumberInputProps> = ({
         disabled && "opacity-50 pointer-events-none"
       )}
       {...props}
+      id={field.id}
+      name={field.name}
+      value={field.value}
+      onValueChange={field.onChange}
+      onBlur={field.onBlur}
+      errorMessage={field.error}
       disabled={disabled}
     />
   );
