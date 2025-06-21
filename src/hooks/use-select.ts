@@ -1,66 +1,61 @@
 "use client";
 import { useForm } from "@/components/form/form";
+import { SelectProps } from "@heroui/react";
 import { ValidationError } from "next/dist/compiled/amphtml-validator";
-import { useEffect, useId, useState, useCallback } from "react";
+import { useEffect, useId, useState, useCallback, Key } from "react";
 
-export interface UseFieldProps<T, S = (value: T) => void> {
+export interface UseSelectProps {
   id?: string;
   name?: string;
-  value?: T;
-  onChange?: S | ((newValue: T) => void);
-  onBlur?: () => void;
+  value?: SelectProps["selectedKeys"];
+  onChange?: SelectProps["onSelectionChange"];
   ignoreForm?: boolean;
   error?: ValidationError | undefined;
 }
 
-export const useField = <T = string, S = (value: T) => void>({
+export const useSelect = ({
   id,
   name,
   value,
   onChange,
-  onBlur,
   ignoreForm = false,
   error,
-}: UseFieldProps<T, S>) => {
+}: UseSelectProps) => {
   const reactId = useId();
 
   const form = useForm();
-  const [prevValue, setPrevValue] = useState<T | undefined>(value);
-  const [inputValue, setInputValue] = useState<T | undefined>(value);
+  const [inputValue, setInputValue] = useState<SelectProps["selectedKeys"]>(
+    new Set(value || [])
+  );
   const [inputError, setInputError] = useState<ValidationError | undefined>(
     error
   );
 
   const handleChange = useCallback(
-    (newValue: T) => {
+    (newValue: SelectProps["selectedKeys"]) => {
       setInputValue(newValue);
-      if (typeof onChange === 'function') {
-        (onChange as (newValue: T) => void)(newValue);
+      setInputError(undefined);
+      onChange?.(new Set(newValue));
+      if (name && form && !ignoreForm) {
+        const valueToSet = newValue === "all" ? newValue : Array.from(newValue || []);
+        form.setValue(name, valueToSet);
       }
     },
-    [onChange]
+    [name, ignoreForm, form, onChange]
   );
-
-  const handleBlur = useCallback(() => {
-    if (inputValue === prevValue) {
-      return;
-    }
-    onBlur?.();
-    setPrevValue(inputValue);
-    if (!ignoreForm && form && name && form.values[name] !== inputValue) {
-      form.setValue(name, inputValue);
-      form.setError(name, undefined);
-    }
-  }, [ignoreForm, name, inputValue, prevValue, form, onBlur]);
 
   useEffect(() => {
     if (form && !ignoreForm) {
       const formValue = form.values[name || reactId];
-      if (formValue !== undefined || formValue !== inputValue) {
-        setInputValue(formValue);
+      let newSet: Set<Key>;
+      if (typeof formValue === "string") {
+        newSet = new Set(formValue.split(",").filter(Boolean));
+      } else {
+        newSet = new Set(formValue);
       }
+      setInputValue(newSet as unknown as SelectProps["selectedKeys"]);
     }
-  }, [ignoreForm, name, form, reactId, inputValue]);
+  }, [ignoreForm, name, form, reactId, form?.values]);
 
   useEffect(() => {
     if (form && !ignoreForm) {
@@ -76,7 +71,6 @@ export const useField = <T = string, S = (value: T) => void>({
     name: name,
     value: inputValue,
     onChange: handleChange,
-    onBlur: handleBlur,
     error: inputError,
   };
 };

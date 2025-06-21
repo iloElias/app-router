@@ -16,7 +16,7 @@ import { Section } from "@/components/section";
 import { SubmitFormButton } from "@/components/ux/submit-form-button";
 import { useRouter } from "@/hooks/use-router";
 import { ValidationError } from "next/dist/compiled/amphtml-validator";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const options = [
   { value: "option1", label: "Opção 1", description: "Descrição da Opção 1" },
@@ -25,8 +25,34 @@ const options = [
 ];
 
 export default function Playground() {
-  const router = useRouter();  
+  const router = useRouter();
   const [errors, setErrors] = useState<ValidationError>();
+
+  const [asyncData, setAsyncData] =
+    useState<Record<string, string | number | string[]>>();
+
+  useEffect(() => {
+    async function fetchAsyncData() {
+      const data = await new Promise((resolve) =>
+        setTimeout(
+          () =>
+            resolve({
+              text: "Texto de exemplo atualizado",
+              number: 42,
+              decimal: 3.14,
+              select: "option1",
+              select_multiple: ["option1", "option2"],
+              autocomplete: "option1",
+              date: "2025-05-21",
+              textarea: "Texto de exemplo no textarea",
+            }),
+          1000
+        )
+      );
+      setAsyncData(data as Record<string, string | number | string[]>);
+    }
+    fetchAsyncData();
+  }, []);
 
   return (
     <>
@@ -58,11 +84,7 @@ export default function Playground() {
                 Isso é um formulário de exemplo para pesquisa
               </FormHeader>
               <FormGroup label="Dados de formulário">
-                <Input
-                  name="text"
-                  label="text"
-                  placeholder="Digite algo"
-                />
+                <Input name="text" label="text" placeholder="Digite algo" />
                 <NumberInput
                   name="number"
                   label="number"
@@ -185,6 +207,53 @@ export default function Playground() {
                   Continuar
                 </Button>
               </FormFooter>
+            </FormBody>
+          </Form>
+          <Form className="w-full" initialData={asyncData}>
+            <FormBody>
+              <FormHeader>
+                Isso é um formulário de exemplo para updates
+              </FormHeader>
+              <FormGroup label="Dados de formulário">
+                <Input name="text" label="text" placeholder="Digite algo" />
+                <NumberInput
+                  name="number"
+                  label="number"
+                  placeholder="Digite um número"
+                  step={1}
+                />
+                <NumberInput
+                  name="decimal"
+                  label="decimal"
+                  placeholder="Digite um número decimal"
+                  step={0.01}
+                />
+                <Select
+                  name="select"
+                  label="select"
+                  placeholder="Selecione uma opção"
+                  options={options}
+                />
+                <Select
+                  name="select_multiple"
+                  label="select_multiple"
+                  placeholder="Selecione uma opção (múltipla)"
+                  options={options}
+                  multiple
+                />
+                <Autocomplete
+                  name="autocomplete"
+                  label="autocomplete"
+                  placeholder="Digite para pesquisar"
+                  options={options}
+                />
+                <DatePicker name="date" label="date" />
+                <Textarea
+                  name="textarea"
+                  label="textarea"
+                  placeholder="Digite algo aqui"
+                />
+              </FormGroup>
             </FormBody>
           </Form>
         </Section>

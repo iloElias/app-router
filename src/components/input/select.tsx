@@ -7,7 +7,7 @@ import {
   cn,
 } from "@heroui/react";
 import { Options } from "@/types/options";
-import { useField } from "@/hooks/use-field";
+import { useSelect } from "@/hooks/use-select";
 
 export type SelectProps = {
   children?: HeroUISelectProps["children"];
@@ -24,13 +24,11 @@ export const Select: React.FC<SelectProps> = ({
   onSelectionChange,
   ...props
 }) => {
-  const field = useField<SelectProps["selectedKeys"]>({
+  const field = useSelect({
     id: props.id,
     name,
     value: props.selectedKeys,
-    onChange: (value) => {
-      onSelectionChange?.(new Set(value));
-    },
+    onChange: onSelectionChange,
     ignoreForm: !name,
     error: props.errorMessage,
   });
@@ -47,19 +45,18 @@ export const Select: React.FC<SelectProps> = ({
       }}
       labelPlacement="outside"
       variant="bordered"
-      selectionMode={multiple ? "multiple" : "single"}
       className={cn(
         "text-gray-700 dark:text-gray-200 transition-colors duration-100 select",
         className,
         disabled && "opacity-50 pointer-events-none"
       )}
       {...props}
+      selectionMode={multiple ? "multiple" : "single"}
       id={field.id}
       name={field.name}
-      // selectedKeys={new Set(field.value)}
-      // onSelectionChange={field.onChange}
+      selectedKeys={field.value}
+      onSelectionChange={field.onChange}
       errorMessage={field.error}
-      // onBlur={field.onBlur}
     >
       {options
         ? options.map((option) => (

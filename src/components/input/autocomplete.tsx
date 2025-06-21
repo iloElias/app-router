@@ -7,9 +7,8 @@ import {
 } from "@heroui/react";
 import { Option, Options } from "@/types/options";
 import { useAsyncList } from "@react-stately/data";
-import { useApp } from "@/contexts/app-context";
+import { useAutocomplete } from "@/hooks/use-autocomplete";
 import { useCallback } from "react";
-import { useForm } from "../form/form";
 
 export type AutocompleteProps = {
   options?: Options;
@@ -21,11 +20,10 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
   options,
   className,
   required,
+  onSelectionChange,
   isRequired,
   ...props
 }) => {
-  const { query } = useApp();
-  const form = useForm();
   const isFieldRequired = required ?? isRequired ?? false;
 
   const list = useAsyncList<Option>({
@@ -47,13 +45,30 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
     },
   });
 
-  const getFieldValue = useCallback(() => {
-    if (!name) return new Set();
-    if (form && form.values[name]) {
-      return new Set([form.values[name]]);
-    }
-    return new Set([query[name]]);
-  }, [name, query, form]);
+  const updateInput = useCallback(
+    (key: React.Key | null) => {
+      if (key === null) {
+        list.setFilterText("");
+        return;
+      }
+      const selectedOption = options?.find((item) => item.value === key);
+      if (selectedOption) {
+        list.setFilterText(selectedOption.label);
+      } else {
+        list.setFilterText("");
+      }
+    },
+    [options, list]
+  );
+
+  const field = useAutocomplete({
+    id: props.id,
+    name,
+    value: props.selectedKey,
+    onChange: onSelectionChange,
+    ignoreForm: !name,
+    error: props.errorMessage,
+  });
 
   return (
     <HeroUIAutocomplete
@@ -61,23 +76,26 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
       variant="bordered"
       isLoading={list.isLoading}
       inputValue={list.filterText}
-      items={list.items}
       onInputChange={list.setFilterText}
-      onSelectionChange={(key) => {
-        if (!name) return;
-        form?.setValue(name, key);
-      }}
+      items={list.items}
       classNames={{
         base: "relative max-h-10 mb-6",
         listbox: "!transition-colors !duration-100",
         listboxWrapper: "!transition-colors !duration-100",
       }}
-      defaultSelectedKey={Array.from(getFieldValue())[0]}
       className={cn(
-        "text-gray-700 dark:text-gray-200 transition-colors duration-100 autocomplete",
+        "transition-colors duration-100 autocomplete",
         className
       )}
       isRequired={isFieldRequired}
+      id={field.id}
+      name={field.name}
+      selectedKey={field.value}
+      onSelectionChange={(key) => {
+        field.onChange(key);
+        updateInput(key);
+      }}
+      errorMessage={field.error}
       {...props}
     >
       {(item) => {

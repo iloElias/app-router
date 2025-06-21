@@ -1,42 +1,40 @@
 "use client";
 import { useForm } from "@/components/form/form";
+import { AutocompleteProps } from "@heroui/react";
 import { ValidationError } from "next/dist/compiled/amphtml-validator";
 import { useEffect, useId, useState, useCallback } from "react";
 
-export interface UseFieldProps<T, S = (value: T) => void> {
+export interface UseAutocompleteProps {
   id?: string;
   name?: string;
-  value?: T;
-  onChange?: S | ((newValue: T) => void);
-  onBlur?: () => void;
+  value?: AutocompleteProps["selectedKey"];
+  onChange?: AutocompleteProps["onSelectionChange"];
   ignoreForm?: boolean;
   error?: ValidationError | undefined;
 }
 
-export const useField = <T = string, S = (value: T) => void>({
+export const useAutocomplete = ({
   id,
   name,
   value,
   onChange,
-  onBlur,
   ignoreForm = false,
   error,
-}: UseFieldProps<T, S>) => {
+}: UseAutocompleteProps) => {
   const reactId = useId();
 
   const form = useForm();
-  const [prevValue, setPrevValue] = useState<T | undefined>(value);
-  const [inputValue, setInputValue] = useState<T | undefined>(value);
+  const [inputValue, setInputValue] =
+    useState<AutocompleteProps["selectedKey"]>(value);
   const [inputError, setInputError] = useState<ValidationError | undefined>(
     error
   );
 
   const handleChange = useCallback(
-    (newValue: T) => {
+    (newValue: AutocompleteProps["selectedKey"]) => {
       setInputValue(newValue);
-      if (typeof onChange === "function") {
-        (onChange as (newValue: T) => void)(newValue);
-      }
+      setInputError(undefined);
+      onChange?.(newValue ?? null);
       if (name && form && !ignoreForm) {
         form.setValue(name, newValue);
       }
@@ -44,24 +42,12 @@ export const useField = <T = string, S = (value: T) => void>({
     [name, ignoreForm, form, onChange]
   );
 
-  const handleBlur = useCallback(() => {
-    if (inputValue === prevValue) {
-      return;
-    }
-    onBlur?.();
-    setPrevValue(inputValue);
-    if (!ignoreForm && form && name && form.values[name] !== inputValue) {
-      form.setValue(name, inputValue);
-      form.setError(name, undefined);
-    }
-  }, [ignoreForm, name, inputValue, prevValue, form, onBlur]);
-
   useEffect(() => {
     if (form && !ignoreForm) {
       const formValue = form.values[name || reactId];
       setInputValue(formValue);
     }
-  }, [ignoreForm, name, form, reactId, inputValue]);
+  }, [ignoreForm, name, form, reactId, form?.values]);
 
   useEffect(() => {
     if (form && !ignoreForm) {
@@ -77,7 +63,6 @@ export const useField = <T = string, S = (value: T) => void>({
     name: name,
     value: inputValue,
     onChange: handleChange,
-    onBlur: handleBlur,
     error: inputError,
   };
 };
