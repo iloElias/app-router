@@ -4,21 +4,6 @@ import { domAnimation, LazyMotion, motion } from "framer-motion";
 import { useApp } from "@/contexts/app-context";
 import { cn } from "@heroui/react";
 
-export const hideOnScrollVariants = {
-  visible: {
-    y: 0,
-    transition: {
-      ease: "easeOut",
-    },
-  },
-  hidden: {
-    y: "100%",
-    transition: {
-      ease: "easeIn",
-    },
-  },
-};
-
 export interface FooterProps {
   children?: React.ReactNode | React.ReactNode[];
   className?: string;
@@ -40,7 +25,20 @@ export const Footer: React.FC<FooterProps> = ({
       <motion.nav
         animate={!headerVisible ? "hidden" : "visible"}
         initial={false}
-        variants={hideOnScrollVariants}
+        variants={{
+          visible: {
+            y: 0,
+            transition: {
+              ease: "ease-out",
+            },
+          },
+          hidden: {
+            y: "100%",
+            transition: {
+              ease: "ease-in",
+            },
+          },
+        }}
         className={cn(
           "bottom-0 left-0 z-40 fixed flex justify-center items-center bg-background/70 shadow-sm backdrop-blur-lg data-[menu-open=true]:backdrop-blur-xl backdrop-saturate-150 border-divider border-t data-[menu-open=true]:border-none w-full h-auto transition-colors",
           className
