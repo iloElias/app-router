@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AppProviders } from "@/contexts/app-providers";
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -18,9 +16,7 @@ export default function RootLayout({
     <html suppressHydrationWarning lang="pt-BR" className="bg-default-50">
       <body className="antialiased">
         <AppProviders>
-          <Header />
           {children}
-          <Footer />
         </AppProviders>
       </body>
     </html>

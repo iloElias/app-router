@@ -7,11 +7,13 @@ import { cn } from "@heroui/react";
 export interface FooterProps {
   children?: React.ReactNode | React.ReactNode[];
   className?: string;
+  shouldHideOnScroll?: boolean;
 }
 
 export const Footer: React.FC<FooterProps> = ({
   children,
   className,
+  shouldHideOnScroll,
   ...props
 }) => {
   const { headerVisible } = useApp();
@@ -22,33 +24,36 @@ export const Footer: React.FC<FooterProps> = ({
 
   return (
     <LazyMotion features={domAnimation}>
-      <motion.nav
-        animate={!headerVisible ? "hidden" : "visible"}
-        initial={false}
-        variants={{
-          visible: {
-            y: 0,
-            transition: {
-              ease: "ease-out",
+      <nav className="flex justify-center items-center gap-4 w-full h-[65px] overflow-hidden">
+        <motion.footer
+          animate={shouldHideOnScroll && !headerVisible ? "hidden" : "visible"}
+          initial={false}
+          variants={{
+            visible: {
+              y: 0,
+              transition: {
+                ease: "easeOut",
+              },
             },
-          },
-          hidden: {
-            y: "100%",
-            transition: {
-              ease: "ease-in",
+            hidden: {
+              y: "100%",
+              transition: {
+                ease: "easeIn",
+              },
             },
-          },
-        }}
-        className={cn(
-          "bottom-0 left-0 z-40 fixed flex justify-center items-center bg-background/70 shadow-sm backdrop-blur-lg data-[menu-open=true]:backdrop-blur-xl backdrop-saturate-150 border-divider border-t data-[menu-open=true]:border-none w-full h-auto transition-colors",
-          className
-        )}
-        {...props}
-      >
-        <footer className="z-40 relative flex flex-row flex-nowrap justify-between items-center gap-4 px-10 w-full max-w-[1024px] h-[var(--navbar-height)]">
-          {children}
-        </footer>
-      </motion.nav>
+          }}
+          className={cn(
+            "bottom-0 left-0 z-40 fixed",
+            "flex justify-center bg-background/70 shadow-sm backdrop-blur-lg data-[menu-open=true]:backdrop-blur-xl backdrop-saturate-150 px-10 border-divider border-t data-[menu-open=true]:border-none w-full h-auto transition-colors",
+            className
+          )}
+          {...props}
+        >
+          <div className="flex flex-row flex-nowrap justify-between items-center gap-4 w-full max-w-[1034px] h-full container">
+            {children}
+          </div>
+        </motion.footer>
+      </nav>
     </LazyMotion>
   );
 };

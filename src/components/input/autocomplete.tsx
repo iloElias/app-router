@@ -83,10 +83,7 @@ export const Autocomplete: React.FC<AutocompleteProps> = ({
         listbox: "!transition-colors !duration-100",
         listboxWrapper: "!transition-colors !duration-100",
       }}
-      className={cn(
-        "transition-colors duration-100 autocomplete",
-        className
-      )}
+      className={cn("transition-colors duration-100 autocomplete", className)}
       isRequired={isFieldRequired}
       id={field.id}
       name={field.name}

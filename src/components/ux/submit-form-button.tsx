@@ -9,7 +9,7 @@ export const SubmitFormButton: React.FC<ButtonProps> = ({
 }) => {
   return (
     <Button
-      className={cn("justify-self-end px-16", className)}
+      className={cn("justify-self-start px-16", className)}
       color="primary"
       type="submit"
       confirmAction

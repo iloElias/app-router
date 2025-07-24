@@ -1,7 +1,8 @@
-"use client";
 import { useApp } from "@/contexts/app-context";
+import { useAuth } from "@/contexts/auth-provider";
 import { useDebounce } from "@/hooks/use-debounce";
 import {
+  Avatar,
   Button,
   Link,
   Navbar,
@@ -10,9 +11,17 @@ import {
   NavbarItem,
 } from "@heroui/react";
 import { useId } from "react";
+import { Suspense } from "./suspense";
 
-export const Header: React.FC = () => {
+export interface HeaderProps {
+  shouldHideOnScroll?: boolean;
+}
+
+export const Header: React.FC<HeaderProps> = ({
+  shouldHideOnScroll = true,
+}) => {
   const id = useId();
+  const { user } = useAuth();
 
   const { setHeaderVisible } = useApp();
 
@@ -25,8 +34,8 @@ export const Header: React.FC = () => {
   return (
     <Navbar
       id={id}
-      shouldHideOnScroll
       isBordered
+      shouldHideOnScroll={shouldHideOnScroll}
       onScrollPositionChange={debounce}
     >
       <NavbarContent>
@@ -52,14 +61,27 @@ export const Header: React.FC = () => {
         </NavbarItem>
       </NavbarContent>
       <NavbarContent justify="end">
-        <NavbarItem className="hidden lg:flex">
-          <Link href="#">Login</Link>
-        </NavbarItem>
-        <NavbarItem>
-          <Button as={Link} color="primary" href="#" variant="flat">
-            Sign Up
-          </Button>
-        </NavbarItem>
+        <Suspense condition={!user}>
+          <NavbarItem>
+            <Link href="/login">Login</Link>
+          </NavbarItem>
+          <NavbarItem>
+            <Button as={Link} color="primary" href="#" variant="flat">
+              Sign Up
+            </Button>
+          </NavbarItem>
+        </Suspense>
+        <Suspense condition={!!user}>
+          <NavbarItem className="flex items-center">
+            <Button isIconOnly as={Link} href="/login">
+              <Avatar
+                src={user?.picture}
+                radius="none"
+                suppressHydrationWarning
+              />
+            </Button>
+          </NavbarItem>
+        </Suspense>
       </NavbarContent>
     </Navbar>
   );

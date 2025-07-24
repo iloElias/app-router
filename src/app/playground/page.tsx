@@ -11,6 +11,7 @@ import { Input } from "@/components/input/input";
 import { NumberInput } from "@/components/input/number-input";
 import { Select } from "@/components/input/select";
 import { Textarea } from "@/components/input/textarea";
+import { Layout } from "@/components/layout";
 import { Main } from "@/components/main";
 import { Section } from "@/components/section";
 import { SubmitFormButton } from "@/components/ux/submit-form-button";
@@ -55,7 +56,7 @@ export default function Playground() {
   }, []);
 
   return (
-    <>
+    <Layout>
       <Main>
         <Section>
           <Form
@@ -258,6 +259,6 @@ export default function Playground() {
           </Form>
         </Section>
       </Main>
-    </>
+    </Layout>
   );
 }

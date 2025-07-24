@@ -4,9 +4,15 @@ import FooterItem from "./footer-item";
 import Icon from "./icon";
 import { AddSquare, HomeAngle, User } from "@solar-icons/react";
 
-export const Footer: React.FC = () => {
+export interface FooterProps {
+  shouldHideOnScroll?: boolean;
+}
+
+export const Footer: React.FC<FooterProps> = ({
+  shouldHideOnScroll = true,
+}) => {
   return (
-    <FooterComponent>
+    <FooterComponent shouldHideOnScroll={shouldHideOnScroll}>
       <FooterItem label="Home" href="/">
         {({ active }) => (
           <Icon showAlt={active} size={32}>

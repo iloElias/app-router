@@ -9,6 +9,7 @@ import React, {
 
 interface AppContextProps {
   query: Record<string, string | number>;
+  mounted: boolean;
   headerVisible: boolean;
   setHeaderVisible: (visible: boolean) => void;
 }
@@ -20,6 +21,7 @@ interface AppProviderProps {
 }
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
+  const [mounted, setMounted] = useState<boolean>(false);
   const [query, setQuery] = useState<Record<string, string | number>>({});
   const [headerVisible, setHeaderVisible] = useState<boolean>(true);
 
@@ -42,8 +44,14 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     });
   }, []);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
-    <AppContext.Provider value={{ query, headerVisible, setHeaderVisible }}>
+    <AppContext.Provider
+      value={{ query, mounted, headerVisible, setHeaderVisible }}
+    >
       {children}
     </AppContext.Provider>
   );
